@@ -1,17 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type FactSheet } from "@terra-oracle/terra-oracle";
 
-// Initialize the Gemini SDK
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+// Initialize the Gemini SDK and trim any accidental whitespace from the environment variable
+const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
+const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
  * Sends the Oracle Fact Sheet to Gemini to generate expert advisory text.
- * @param factSheet - The raw data returned by @terra-oracle/terra-oracle
- * @returns - Expert advisory text as a string (Markdown)
  */
 export async function getAgriAdvisory(factSheet: FactSheet): Promise<string> {
-  // Use gemini-3-flash-preview for high-speed, cost-effective reasoning
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  // Switched to gemini-1.5-flash for maximum stability on the public free tier
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
     You are an expert agronomist specialized in climate adaptation for the Global South.
