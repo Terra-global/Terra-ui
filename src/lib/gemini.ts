@@ -4,13 +4,14 @@ export async function getAgriAdvisory(factSheet: FactSheet): Promise<string> {
   const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
   if (!apiKey) throw new Error("Missing API Key");
 
-  // We list the most likely model aliases for your account
-  const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+  // Priortizing Gemini 3 IDs as seen in your specific dashboard legend
+  const modelsToTry = ["gemini-3-flash", "gemini-3-flash-preview", "gemini-1.5-flash", "gemini-pro"];
   let lastError = "";
 
   for (const modelId of modelsToTry) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1/models/${modelId}:generateContent?key=${apiKey}`;
+      // Switched back to v1beta for preview model support
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
       const payload = {
         contents: [{
           parts: [{ text: `Analyze this field report for ${factSheet.crop_name}: ${JSON.stringify(factSheet)}. Respond as an expert agronomist.` }]
@@ -33,5 +34,5 @@ export async function getAgriAdvisory(factSheet: FactSheet): Promise<string> {
     }
   }
 
-  throw new Error(`All Oracle nodes reported 404/401. Last reason: ${lastError}`);
+  throw new Error(`Oracle Node failure. Last reason: ${lastError}`);
 }
