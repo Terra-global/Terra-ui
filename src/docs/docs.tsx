@@ -1,4 +1,4 @@
-import { Book, Code, Zap, Info, ShieldCheck, Layout, BellRing, Settings } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 const DeveloperDocs = () => {
   return (
@@ -45,6 +45,40 @@ const DeveloperDocs = () => {
           <p>
             This ensures that <strong>only users currently experiencing the danger</strong> receive the alert, eliminating notification fatigue.
           </p>
+        </section>
+
+        {/* 3. Weather Forecast SDK */}
+        <section id="forecast" style={{ marginBottom: '4rem' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+            3. Pure JSON Weather Forecast SDK
+          </h2>
+          <p style={{ marginBottom: '1rem' }}>
+            The Oracle includes a stateless, design-free Weather Forecast module powered by Open-Meteo. It provides a 7-day outlook and automatically flags incoming severe rain and thunderstorms.
+          </p>
+          <div style={{ background: '#f1f5f9', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+            <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{`import { getWeatherForecast, resolveLocation } from '@terra-oracle/terra-oracle';
+
+const fetchLocalForecast = async () => {
+  // Grab the exact coordinates of the farmer
+  const loc = await resolveLocation(); 
+
+  // Pull the hyper-local forecast
+  const data = await getWeatherForecast({
+    latitude: loc.latitude,
+    longitude: loc.longitude
+  });
+
+  // Automatically check if a thunderstorm is approaching!
+  if (data.alerts.storm.active) {
+    console.warn("Storm incoming:", data.alerts.storm.items[0].message);
+  }
+
+  // Access the 7-day forecast data
+  data.week.forEach(day => {
+    console.log(\`\${day.label}: Max \${day.temperature.max.value}°C\`);
+  });
+};`}</pre>
+          </div>
         </section>
 
         {/* 3. Background Safety Sentinel */}

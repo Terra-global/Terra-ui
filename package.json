@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@terra-oracle/terra-oracle": "^1.1.12",
+    "@terra-oracle/terra-oracle": "^1.1.15",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

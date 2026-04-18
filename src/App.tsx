@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { analyzeField, checkAlerts, type FactSheet } from '@terra-oracle/terra-oracle';
-import { Search, RefreshCcw, Braces, BookOpen, Layout, Sparkles, X, AlertTriangle } from 'lucide-react';
+import { analyzeField, checkAlerts, getWeatherForecast, type FactSheet } from '@terra-oracle/terra-oracle';
+import { RefreshCcw, Braces, BookOpen, Layout, Sparkles, X, AlertTriangle, CloudSun } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import DeveloperDocs from './docs/docs';
 import { getAgriAdvisory } from './lib/gemini';
-import { CONFIG } from './lib/config';
+
 
 function App() {
   const [view, setView] = useState<'dashboard' | 'docs'>('dashboard');
@@ -13,6 +13,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [factSheet, setFactSheet] = useState<FactSheet | null>(null);
+  const [forecast, setForecast] = useState<any>(null);
 
   // Config States
   const [includeSeasonal, setIncludeSeasonal] = useState(false);
@@ -51,6 +52,27 @@ function App() {
         }
     };
     initialCheck();
+
+    // Fetch Weather Forecast Widget Data
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          const data = await getWeatherForecast({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          });
+          setForecast(data);
+
+          // Check for severe storms/rain
+          if (data.alerts.storm.active && !sessionStorage.getItem('oracle_alert_dismissed')) {
+            setActiveAlert(data.alerts.storm.items[0].message);
+            setShowAlertModal(true);
+          }
+        } catch (e) {
+          console.error("Forecast failed:", e);
+        }
+      });
+    }
 
     return () => clearInterval(sentinel);
   }, []);
@@ -202,33 +224,34 @@ function App() {
             <p className="subtitle" style={{ fontSize: '0.9rem' }}>Multimodal Climate Adaptation Protocol</p>
           </header>
 
-          <div style={{ maxWidth: '600px', margin: '0 auto 2rem' }}>
-            {/* Main Input Section */}
-            <div className="input-section" style={{ padding: '1.25rem', borderRadius: '1.25rem', background: 'white', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                <button 
-                    onClick={() => setCategory('PLANT')}
-                    style={{ 
-                    flex: 1, padding: '0.5rem', fontSize: '0.75rem', borderRadius: '0.5rem',
-                    background: category === 'PLANT' ? '#f0fdf4' : 'transparent',
-                    color: category === 'PLANT' ? '#166534' : '#64748b',
-                    border: category === 'PLANT' ? '1px solid #bbf7d0' : '1px solid transparent'
-                    }}
-                >
-                    Plants & Crops
-                </button>
-                <button 
-                    onClick={() => setCategory('ANIMAL')}
-                    style={{ 
-                    flex: 1, padding: '0.5rem', fontSize: '0.75rem', borderRadius: '0.5rem',
-                    background: category === 'ANIMAL' ? '#f0fdf4' : 'transparent',
-                    color: category === 'ANIMAL' ? '#166534' : '#64748b',
-                    border: category === 'ANIMAL' ? '1px solid #bbf7d0' : '1px solid transparent'
-                    }}
-                >
-                    Poultry & Livestock
-                </button>
-                </div>
+          <div style={{ maxWidth: '800px', margin: '0 auto 2rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap' }}>
+              {/* Main Input Section */}
+              <div className="input-section" style={{ flex: '1 1 400px', padding: '1.25rem', borderRadius: '1.25rem', background: 'white', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                  <button 
+                      onClick={() => setCategory('PLANT')}
+                      style={{ 
+                      flex: 1, padding: '0.5rem', fontSize: '0.75rem', borderRadius: '0.5rem',
+                      background: category === 'PLANT' ? '#f0fdf4' : 'transparent',
+                      color: category === 'PLANT' ? '#166534' : '#64748b',
+                      border: category === 'PLANT' ? '1px solid #bbf7d0' : '1px solid transparent'
+                      }}
+                  >
+                      Plants & Crops
+                  </button>
+                  <button 
+                      onClick={() => setCategory('ANIMAL')}
+                      style={{ 
+                      flex: 1, padding: '0.5rem', fontSize: '0.75rem', borderRadius: '0.5rem',
+                      background: category === 'ANIMAL' ? '#f0fdf4' : 'transparent',
+                      color: category === 'ANIMAL' ? '#166534' : '#64748b',
+                      border: category === 'ANIMAL' ? '1px solid #bbf7d0' : '1px solid transparent'
+                      }}
+                  >
+                      Poultry & Livestock
+                  </button>
+                  </div>
 
                 <form onSubmit={handleLookup} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                 <input
@@ -252,11 +275,26 @@ function App() {
                         <input type="checkbox" checked={includeHistory} onChange={(e) => setIncludeHistory(e.target.checked)} /> Historical Comparison
                     </label>
                 </div>
+              </div>
+
+              {forecast && (
+                <div style={{ flex: '0 0 140px', height: 'auto', minHeight: '140px', padding: '1.25rem', borderRadius: '1.25rem', background: '#1e293b', color: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#94a3b8', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '0.5rem', justifyContent: 'center' }}>
+                    <CloudSun size={10} /> LIVE
+                  </div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.1rem' }}>{forecast.current.temperature.value}°C</div>
+                  <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginBottom: '0.75rem' }}>{forecast.current.weather.label}</div>
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Humidity</span> <span style={{ color: 'white' }}>{forecast.current.humidity.value}%</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Wind</span> <span style={{ color: 'white' }}>{Math.round(forecast.current.wind.speed.value)}km/h</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <p style={{ textAlign: 'center', fontSize: '0.7rem', color: '#94a3b8', marginTop: '1rem' }}>
-                Oracle monitoring active: Extreme Heat alerts triggered at 40°C.
-            </p>
           </div>
 
           {error && <div className="error" style={{ marginBottom: '1rem', padding: '1rem', background: '#fef2f2', color: '#991b1b', borderRadius: '0.75rem', fontSize: '0.85rem' }}>{error}</div>}
