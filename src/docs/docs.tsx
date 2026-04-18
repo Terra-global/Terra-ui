@@ -124,15 +124,48 @@ Future<void> initOracle(double lat, double lon) async {
           </div>
         </section>
 
-        {/* 3. Alert Sentinel */}
-        <section id="sentinel" style={{ marginBottom: '4rem' }}>
+        {/* 3. Weather Forecast SDK */}
+        <section id="forecast" style={{ marginBottom: '4rem' }}>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
-            3. Hyper-Local Alert Sentinel
+            3. Pure JSON Weather Forecast SDK
           </h2>
           <p style={{ marginBottom: '1rem' }}>
-            Enforce the <strong>Terra Oracle Safety Standards</strong> (40°C Heat Limit & Rain Detection) across any platform.
+            The Oracle includes a stateless, design-free Weather Forecast module. It provides a 7-day outlook and automatically flags incoming severe rain and thunderstorms.
           </p>
-          <div style={{ padding: '1.5rem', background: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '0 0.5rem 0.5rem 0' }}>
+          <div style={{ background: '#f1f5f9', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+            <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{platform === 'flutter' ? `// For Flutter, parse the 'hourly' and 'daily' arrays from the REST response
+// to build your own weekly forecast loop.` : `import { getWeatherForecast, resolveLocation } from '@terra-oracle/terra-oracle';
+
+const fetchLocalForecast = async () => {
+  const loc = await resolveLocation(); 
+  const data = await getWeatherForecast({
+    latitude: loc.latitude,
+    longitude: loc.longitude
+  });
+
+  // Automatically check if a storm is approaching!
+  if (data.alerts.storm.active) {
+    console.warn("ORACLE ALERT:", data.alerts.storm.items[0].message);
+  }
+
+  // Access the 7-day forecast data
+  data.week.forEach(day => {
+    console.log(\`\${day.label}: Max \${day.temperature.max.value}°C\`);
+  });
+};`}</pre>
+          </div>
+        </section>
+
+        {/* 4. Background Safety Sentinel */}
+        <section id="sentinel" style={{ marginBottom: '4rem' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+            4. Background Safety Sentinel
+          </h2>
+          <p style={{ marginBottom: '1.5rem' }}>
+            The SDK includes a lightweight <code>checkAlerts</code> function designed for background monitoring. It automatically enforces the <strong>Tiered Protocol Standards</strong>.
+          </p>
+          
+          <div style={{ padding: '1.5rem', background: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '0 0.5rem 0.5rem 0', marginBottom: '2rem' }}>
             <h4 style={{ fontWeight: 600, color: '#92400e', marginBottom: '0.5rem' }}>Tiered Alert Logic:</h4>
             <ul style={{ paddingLeft: '1.5rem', color: '#92400e', fontSize: '0.9rem' }}>
               <li><strong>SEVERE:</strong> Thunderstorms, Heavy Rain, Heat &gt; 40°C.</li>
@@ -140,14 +173,84 @@ Future<void> initOracle(double lat, double lon) async {
               <li><strong>MINOR:</strong> Drizzle, Slight Rain.</li>
             </ul>
           </div>
+
+          <div style={{ background: '#0f172a', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #1e293b' }}>
+            <pre style={{ fontSize: '0.85rem', color: '#94a3b8', overflowX: 'auto' }}>{`import { checkAlerts } from '@terra-oracle/terra-oracle';
+
+const monitorEnvironment = async () => {
+  // Checks weather against tiered limits (Heat, Rain, Drizzle)
+  const alerts = await checkAlerts({}); 
+  
+  if (alerts.length > 0) {
+    // e.g. "ORACLE SEVERE: Thunderstorm currently active..."
+    showNotification(alerts[0].message);
+  }
+};
+
+setInterval(monitorEnvironment, 1000 * 60 * 5);`}</pre>
+          </div>
         </section>
+
+        {/* 5. AI Interfacing */}
+        <section id="ai" style={{ marginBottom: '4rem' }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+            5. Cognitive Layer (AI Interpretation)
+          </h2>
+          <p style={{ marginBottom: '1.5rem' }}>
+            Terra Oracle outputs a structured <strong>Fact Sheet</strong>. The AI layer handles the professional Interpretation.
+          </p>
+          <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+            <p style={{ fontWeight: 600, color: '#0f172a', marginBottom: '1rem' }}>Example Prompt Context:</p>
+            <pre style={{ 
+              fontSize: '0.85rem', 
+              color: '#475569', 
+              whiteSpace: 'pre-wrap',
+              background: 'white',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #e2e8f0'
+            }}>{`"Analyze these thermal conditions: 
+\${JSON.stringify(factSheet)}
+
+Only warn if data is an anomaly compared to local historical norms."`}</pre>
+          </div>
+        </section>
+
+        {/* 6. Full Template */}
+        {platform !== 'flutter' && (
+          <section id="template" style={{ marginBottom: '4rem' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+              6. Full React Sentinel Template
+            </h2>
+            <div style={{ background: '#f1f5f9', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+              <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{`import { analyzeField, checkAlerts } from '@terra-oracle/terra-oracle';
+
+export const FarmerDashboard = () => {
+    useEffect(() => {
+        const sentinel = setInterval(async () => {
+            const alerts = await checkAlerts({});
+            if (alerts.length > 0) alert(alerts[0].message);
+        }, 300000);
+        return () => clearInterval(sentinel);
+    }, []);
+
+    const getAnalysis = async () => {
+        const factSheet = await analyzeField({ subject: 'Poultry', category: 'ANIMAL' });
+        // Handle result...
+    };
+
+    return <button onClick={getAnalysis}>Generate Analysis</button>;
+};`}</pre>
+            </div>
+          </section>
+        )}
 
         <section style={{ marginBottom: '2rem', padding: '2rem', background: '#ecfdf5', borderRadius: '1rem', border: '1px solid #d1fae5' }}>
           <h2 style={{ fontSize: '1.25rem', color: '#065f46', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ShieldCheck size={20} /> 4. Cross-Platform Assurance
+            <ShieldCheck size={20} /> {platform !== 'flutter' ? '7' : '6'}. Zero-Key Architecture
           </h2>
           <p style={{ color: '#065f46', fontSize: '1rem', opacity: 0.9 }}>
-            Whether it's a web dashboard or a field agent's mobile app, the <strong>@terra-oracle/terra-oracle</strong> protocol ensures consistent, high-accuracy climate monitoring with zero server-side maintenance.
+            The protocol never asks for your Gemini API key. All AI interaction happens on your own client, ensuring full control over your credentials and costs.
           </p>
         </section>
 
