@@ -70,10 +70,10 @@ const DeveloperDocs = () => {
           ) : (
             <>
               <p style={{ marginBottom: '1rem' }}>
-                For Flutter, we recommend using the <strong>REST API</strong> implementation to fetch hyper-local data directly into your Dart models.
+                For Flutter, install the <strong>terra_oracle</strong> package directly from <a href="https://pub.dev/packages/terra_oracle" target="_blank" rel="noreferrer" style={{ color: '#3b82f6', textDecoration: 'none' }}>pub.dev</a>.
               </p>
               <div style={{ background: '#0f172a', padding: '1.25rem', borderRadius: '0.5rem', color: '#f8fafc', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                # No package needed - uses standard http client
+                flutter pub add terra_oracle
               </div>
             </>
           )}
@@ -108,18 +108,17 @@ const initOracle = () => {
     console.log("Mobile Temp:", data.current.temperature.value);
   });
 };`}
-              {platform === 'flutter' && `import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-Future<void> initOracle(double lat, double lon) async {
-  final url = "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m&models=best_match";
-  final response = await http.get(Uri.parse(url));
-  
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    print("Flutter Temp: \${data['current']['temperature_2m']}");
-  }
-}`}
+              {platform === 'flutter' && `import 'package:terra_oracle/terra_oracle.dart';
+ 
+ Future<void> initOracle() async {
+   // Analyze a specific crop
+   final factSheet = await TerraOracle.analyzeCrop(
+     "Oil Palm",
+   );
+   
+   print("Location: \${factSheet.environmentalSnapshot.location}");
+   print("Current Temp: \${factSheet.environmentalSnapshot.tempC}°C");
+ }`}
             </pre>
           </div>
         </section>
@@ -133,8 +132,22 @@ Future<void> initOracle(double lat, double lon) async {
             The Oracle includes a stateless, design-free Weather Forecast module. It provides a 7-day outlook and automatically flags incoming severe rain and thunderstorms.
           </p>
           <div style={{ background: '#f1f5f9', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-            <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{platform === 'flutter' ? `// For Flutter, parse the 'hourly' and 'daily' arrays from the REST response
-// to build your own weekly forecast loop.` : `import { getWeatherForecast, resolveLocation } from '@terra-oracle/terra-oracle';
+            <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{platform === 'flutter' ? `import 'package:terra_oracle/terra_oracle.dart';
+
+const fetchLocalForecast = async () => {
+  // Fetches 8-day forecast + evaluated alerts
+  final response = await TerraOracle.getWeatherForecast(
+    latitude: 6.5244,
+    longitude: 3.3792,
+  );
+
+  if (response.alerts.isNotEmpty) {
+    print("ORACLE ALERT: \${response.alerts.first.message}");
+  }
+
+  // Access the 8-day daily forecast snapshot
+  print("Tomorrow Max: \${response.snapshot?.maxTemps[1]}°C");
+};` : `import { getWeatherForecast, resolveLocation } from '@terra-oracle/terra-oracle';
 
 const fetchLocalForecast = async () => {
   const loc = await resolveLocation(); 
@@ -223,23 +236,42 @@ Only warn if data is an anomaly compared to local historical norms."`}</pre>
               6. Full React Sentinel Template
             </h2>
             <div style={{ background: '#f1f5f9', padding: '1.25rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-              <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{`import { analyzeField, checkAlerts } from '@terra-oracle/terra-oracle';
+              <pre style={{ fontSize: '0.8rem', color: '#334155', overflowX: 'auto', lineHeight: 1.5 }}>{`import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { analyzeCrop, analyzeAnimal, analyzeWeather } from '@terra-oracle/terra-oracle';
 
-export const FarmerDashboard = () => {
-    useEffect(() => {
-        const sentinel = setInterval(async () => {
-            const alerts = await checkAlerts({});
-            if (alerts.length > 0) alert(alerts[0].message);
-        }, 300000);
-        return () => clearInterval(sentinel);
-    }, []);
+// Optional: You can use React Router to build dedicated pages
+export const AppRoutes = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route path="/crop" element={<CropPage />} />
+      <Route path="/animal" element={<AnimalPage />} />
+      <Route path="/weather" element={<WeatherPage />} />
+    </Routes>
+  </BrowserRouter>
+);
 
-    const getAnalysis = async () => {
-        const factSheet = await analyzeField({ subject: 'Poultry', category: 'ANIMAL' });
-        // Handle result...
+const CropPage = () => {
+    const fetch = async () => {
+        const factSheet = await analyzeCrop('Maize');
+        console.log(factSheet);
     };
+    return <button onClick={fetch}>Analyze Crop</button>;
+};
 
-    return <button onClick={getAnalysis}>Generate Analysis</button>;
+const AnimalPage = () => {
+    const fetch = async () => {
+        const factSheet = await analyzeAnimal('Poultry');
+        console.log(factSheet);
+    };
+    return <button onClick={fetch}>Analyze Livestock</button>;
+};
+
+const WeatherPage = () => {
+    const fetch = async () => {
+        const factSheet = await analyzeWeather();
+        console.log(factSheet);
+    };
+    return <button onClick={fetch}>Fetch Weather</button>;
 };`}</pre>
             </div>
           </section>

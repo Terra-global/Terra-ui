@@ -27,9 +27,10 @@ export async function getAgriAdvisory(factSheet: FactSheet): Promise<string> {
 
   // 2026 Optimization: Use current-gen Gemini 3/2.5 models
   const modelsToTry = [
-    "gemini-3-flash",
     "gemini-2.5-flash",
-    "gemini-1.5-flash"
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-pro"
   ];
   let lastError = "";
 
